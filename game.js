@@ -18,7 +18,7 @@ window.onload = function(){
 	var h = gridHeight * cw;
 	var widthToHeight = w/h;
 
-	var canvasWidth, canvasHeight, scaleX, scaleY;
+v	var canvasWidth, canvasHeight, scaleX, scaleY;
 
 	function resizeGame() {
 	    resizeCanvas();
@@ -91,9 +91,6 @@ window.onload = function(){
 
 	$("#start").on("click", function(){
 	    playGame();
-	    //$("#start").addClass("hidden"); //so user cannot reset game
-	    $("#start").remove();
-	    $(".navbar").remove();
 	});
 
 	function playGame()
@@ -223,8 +220,8 @@ window.onload = function(){
 		var timeText = displayTime();
 
 		//Outside the canvas
-		$("#score").text(score_text);
-		$("#time").text(timeText);
+		$(".game_score").text(score);
+		$(".game_time").text(timeText);
 	    }
 	}
 
@@ -238,16 +235,20 @@ window.onload = function(){
 	}
 
 	function paintTouchAreas() {
-	    paintTouchArea(leftArea);
-	    paintTouchArea(rightArea);
-	    paintTouchArea(upArea);
-	    paintTouchArea(downArea);
+	    paintTouchArea(leftArea, true);
+	    paintTouchArea(rightArea, false);
+	    paintTouchArea(upArea, true);
+	    paintTouchArea(downArea, false);
 	}
 
-	function paintTouchArea(rect) {
+	function paintTouchArea(rect, fill) {
 	    if (rect.active) {
 		ctx.strokeStyle = "#eee";
 		ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
+		if (fill) {
+		    ctx.fillStyle = "#eee";
+		    ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+		}
 	    }
 	}
 
@@ -278,8 +279,9 @@ window.onload = function(){
 	}
 
 	function endGame(){
-	    $('#game_score').val(score);
-	    $('#new_game').submit();
+	    //$('#game_score').val(score);
+	    //$('#new_game').submit();
+	    postScore();
 	}
 
 	window.addEventListener('resize', resizeGame, false);
@@ -327,6 +329,40 @@ window.onload = function(){
 	function changeDirDown() {
 	    if (prevDir != "up") dir = "down";
 	}
+
+	function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+		var cookies = document.cookie.split(';');
+		for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+			cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+			break;
+                    }
+		}
+            }
+            return cookieValue;
+	}
+	var csrftoken = getCookie('csrftoken');
+
+	function postScore() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/games/end/snake', true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
+            xhr.onload = function() {
+		var parsedJSON = JSON.parse(this.responseText);
+		if (parsedJSON.success) {
+                    console.log('Score was successfully posted');
+		} else {
+                    console.log('Failed to post score with error: ' + parsedJSON.error);
+		}
+		window.location = '/games/after/snake';
+            };
+            xhr.send('score=' + score);
+	};
     }
 
 }
