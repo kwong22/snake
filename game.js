@@ -89,6 +89,7 @@ window.onload = function(){
     var snake_array; //an array of cells to make up the snake
 
     $("#start").on("click", function(){
+	$("#start").remove();
 	playGame();
     });
 
