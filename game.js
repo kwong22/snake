@@ -300,6 +300,14 @@ window.onload = function(){
 	handleTouch(x, y);
     }, false);
 
+    canvas.addEventListener('mousedown', function(e){
+	if (gameStarted) e.preventDefault();
+	var rect = canvas.getBoundingClientRect();
+	var x = e.pageX - rect.left;
+	var y = e.pageY - rect.top;
+	handleTouch(x, y);
+    }, false);
+
     function handleTouch(x, y) {
 	if (checkTouchArea(x, y, leftArea)) changeDirLeft();
 	else if (checkTouchArea(x, y, rightArea)) changeDirRight();
